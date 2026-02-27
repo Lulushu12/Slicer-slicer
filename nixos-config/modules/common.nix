@@ -1,17 +1,16 @@
 # Common system settings: locale, timezone, fonts, and audio.
-# These apply to all users and don't depend on the desktop choice.
+# These apply to all users and are independent of the desktop choice.
 
 { pkgs, ... }:
 
 {
   # ── Timezone & locale ────────────────────────────────────────────────────────
-  # Find your timezone: `timedatectl list-timezones | grep Europe`
   time.timeZone = "Europe/Bucharest";
 
   i18n.defaultLocale = "en_US.UTF-8";
 
-  # Use Romanian formats for dates, currency, etc. while keeping English UI.
-  # Remove these if you prefer everything in English.
+  # Romanian formats for dates, numbers, currency — keeps the UI in English
+  # while respecting local conventions. Remove if you prefer everything in en_US.
   i18n.extraLocaleSettings = {
     LC_ADDRESS        = "ro_RO.UTF-8";
     LC_IDENTIFICATION = "ro_RO.UTF-8";
@@ -24,54 +23,94 @@
     LC_TIME           = "ro_RO.UTF-8";
   };
 
-  # Keyboard layout for the virtual console (TTY before the GUI loads).
-  console.keyMap = "us";  # Change to "ro" for a Romanian layout
+  # Keyboard layout for the virtual console (TTY, before the GUI loads).
+  console.keyMap = "us";
 
   # ── Fonts ────────────────────────────────────────────────────────────────────
+  # NixOS ships with no fonts by default — everything here is intentional.
   fonts = {
-    enableDefaultPackages = true;  # A basic set of common fonts
-    packages = with pkgs; [
-      noto-fonts           # Excellent Unicode coverage — covers most scripts
-      noto-fonts-cjk-sans  # Chinese, Japanese, Korean
-      noto-fonts-emoji     # Color emoji
+    enableDefaultPackages = true;
 
-      # Nerd Fonts: patched fonts with developer icons for terminals and editors.
-      # In NixOS 24.11+ each font is a separate package under `nerd-fonts`.
-      nerd-fonts.jetbrains-mono  # Great for coding
-      nerd-fonts.fira-code       # Ligature-heavy coding font
+    packages = with pkgs; [
+      # ── Unicode / language coverage ────────────────────────────────────────
+      noto-fonts              # Broad Latin/Greek/Cyrillic/etc. coverage
+      noto-fonts-cjk-sans     # Chinese, Japanese, Korean (sans-serif)
+      noto-fonts-cjk-serif    # Chinese, Japanese, Korean (serif)
+      noto-fonts-emoji        # Colour emoji (renders in browsers, terminal, apps)
+
+      # ── Modern UI fonts ────────────────────────────────────────────────────
+      inter                   # Clean, widely used sans-serif UI font
+      roboto                  # Google's UI font — common on Android / web
+
+      # ── Microsoft core fonts (needed for .docx / .xlsx compatibility) ──────
+      # Requires allowUnfree = true (set in hosts/nixos/default.nix).
+      # Provides: Arial, Times New Roman, Courier New, Verdana, Georgia, etc.
+      corefonts
+
+      # ── Nerd Fonts: patched fonts with developer icons ─────────────────────
+      # Used by Kitty, Waybar, terminal prompts, file managers, etc.
+      # Each is a separate package under `nerd-fonts` in NixOS 24.11+.
+      nerd-fonts.jetbrains-mono   # Primary coding font (set as default monospace)
+      nerd-fonts.fira-code        # Ligature-heavy coding font
+      nerd-fonts.ubuntu-mono      # Clean, readable Ubuntu monospace
+      nerd-fonts.hack             # Designed specifically for source code
     ];
 
     fontconfig.defaultFonts = {
       serif      = [ "Noto Serif" ];
-      sansSerif  = [ "Noto Sans" ];
-      monospace  = [ "JetBrainsMono Nerd Font" ];
+      sansSerif  = [ "Inter" "Noto Sans" ];
+      monospace  = [ "JetBrainsMono Nerd Font" "FiraCode Nerd Font" ];
       emoji      = [ "Noto Color Emoji" ];
     };
   };
 
-  # ── Audio: PipeWire ──────────────────────────────────────────────────────────
-  # PipeWire is the modern Linux audio stack. It replaces PulseAudio and JACK,
-  # and supports both transparently so all apps work out of the box.
+  # ── Audio: PipeWire + JACK ────────────────────────────────────────────────────
+  # PipeWire is the modern Linux audio server. It replaces both PulseAudio and
+  # JACK, and transparently supports both APIs so all apps work out of the box.
+  #
+  # With jack.enable = true, pro audio apps (DAWs, audio editors) can connect
+  # directly for low-latency operation. PipeWire acts as a JACK server.
+  #
+  # For the lowest latency (DAW work), consider also setting:
+  #   services.pipewire.extraConfig.pipewire."92-low-latency" = {
+  #     context.properties."default.clock.rate" = 48000;
+  #     context.properties."default.clock.quantum" = 64;
+  #   };
   services.pipewire = {
     enable            = true;
     alsa.enable       = true;
-    alsa.support32Bit = true;  # Needed for 32-bit games/apps
-    pulse.enable      = true;  # PulseAudio compatibility layer
-    # jack.enable = true;      # Uncomment if you do pro-audio work
+    alsa.support32Bit = true;   # 32-bit ALSA — needed for some games and old apps
+    pulse.enable      = true;   # PulseAudio compatibility (most apps use this)
+    jack.enable       = true;   # JACK compatibility for pro audio (DAWs, etc.)
   };
 
-  # Disable the legacy PulseAudio daemon — PipeWire replaces it.
+  # WirePlumber is the default session manager for PipeWire (routes streams
+  # between sources and sinks). It replaces the older pipewire-media-session.
+  services.pipewire.wireplumber.enable = true;
+
+  # PulseAudio must be disabled — PipeWire's pulse layer replaces it.
   hardware.pulseaudio.enable = false;
 
-  # RTKit lets PipeWire request realtime scheduling — reduces audio glitches.
+  # RTKit grants PipeWire real-time scheduling priority.
+  # This reduces audio glitches under load (gaming, heavy CPU tasks, etc.).
   security.rtkit.enable = true;
 
+  # PAM limits for the audio group — needed for reliable low-latency audio.
+  # Pro audio apps need to lock memory and run at real-time priority.
+  security.pam.loginLimits = [
+    { domain = "@audio"; item = "memlock"; type = "-";    value = "unlimited"; }
+    { domain = "@audio"; item = "rtprio";  type = "-";    value = "99"; }
+    { domain = "@audio"; item = "nofile";  type = "soft"; value = "99999"; }
+    { domain = "@audio"; item = "nofile";  type = "hard"; value = "99999"; }
+  ];
+
   # ── Optional: Printing ───────────────────────────────────────────────────────
-  # Uncomment to enable CUPS printing support.
+  # Uncomment to enable CUPS printing.
   # services.printing.enable = true;
 
   # ── Optional: Bluetooth ──────────────────────────────────────────────────────
-  # Uncomment if your machine (or VM host with USB passthrough) has Bluetooth.
-  # hardware.bluetooth.enable = true;
+  # Uncomment for bare metal with a Bluetooth adapter.
+  # hardware.bluetooth.enable      = true;
   # hardware.bluetooth.powerOnBoot = true;
+  # services.blueman.enable        = true;   # GUI Bluetooth manager
 }
