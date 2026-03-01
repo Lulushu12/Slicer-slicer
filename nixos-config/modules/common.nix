@@ -49,11 +49,7 @@
 
       # ── Nerd Fonts: patched fonts with developer icons ─────────────────────
       # Used by Kitty, Waybar, terminal prompts, file managers, etc.
-      # Each is a separate package under `nerd-fonts` in NixOS 24.11+.
-      nerd-fonts.jetbrains-mono   # Primary coding font (set as default monospace)
-      nerd-fonts.fira-code        # Ligature-heavy coding font
-      nerd-fonts.ubuntu-mono      # Clean, readable Ubuntu monospace
-      nerd-fonts.hack             # Designed specifically for source code
+      (nerdfonts.override { fonts = [ "JetBrainsMono" "FiraCode" "UbuntuMono" "Hack" ]; })
     ];
 
     fontconfig.defaultFonts = {
