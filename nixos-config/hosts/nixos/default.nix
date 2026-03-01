@@ -21,8 +21,8 @@
     ../../modules/desktop.nix       # Niri + KDE, display manager, Wayland tools
     ../../modules/development.nix   # Compilers, debuggers, build tools
     ../../modules/gaming.nix        # Steam, Lutris, GameMode, RetroArch
-    ../../modules/vm.nix            # QEMU/KVM guest tools (SPICE + qemu-agent)
-    # ../../modules/virtualbox.nix  # ← swap to this if using VirtualBox
+    # ../../modules/vm.nix           # QEMU/KVM guest tools (SPICE + qemu-agent)
+    ../../modules/virtualbox.nix    # VirtualBox guest additions
   ];
 
   # ── Unfree packages ──────────────────────────────────────────────────────────
@@ -31,16 +31,12 @@
   nixpkgs.config.allowUnfree = true;
 
   # ── Bootloader ───────────────────────────────────────────────────────────────
-  boot.loader.systemd-boot.enable      = true;
-  boot.loader.efi.canTouchEfiVariables = true;
-  # Keep the last 10 generations in the boot menu (more history for the VM).
-  # Reduce to 5 on bare metal to keep the menu clean.
-  boot.loader.systemd-boot.configurationLimit = 10;
-
-  # ── Kernel ───────────────────────────────────────────────────────────────────
-  # Latest kernel for best hardware support. Swap to linuxPackages_lts for
-  # more conservative stability on bare metal if you encounter issues.
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # This VM uses a BIOS/MBR disk (no EFI partition), so systemd-boot cannot be
+  # used. GRUB in legacy mode installs to the MBR of /dev/sda instead.
+  boot.loader.grub = {
+    enable = true;
+    device = "/dev/sda";   # Install GRUB to the MBR of the disk (not a partition)
+  };
 
   # ── Network ──────────────────────────────────────────────────────────────────
   networking.hostName = "nixos";
