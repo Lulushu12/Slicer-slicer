@@ -73,7 +73,7 @@
 
     # ── Controller support ──────────────────────────────────────────────────
     antimicrox           # Map controller buttons/axes to keyboard or mouse
-    joystick             # CLI tool: jstest /dev/input/jsX to verify controllers
+    evtest               # CLI tool: test joystick/controller input events
 
   ];
 }
