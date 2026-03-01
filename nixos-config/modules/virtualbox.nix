@@ -10,9 +10,14 @@
 # The guest additions version is kept in sync with your VirtualBox installation
 # automatically by NixOS — no manual updates needed.
 
-{ ... }:
+{ pkgs, ... }:
 
 {
+  # VirtualBox Guest Additions require a kernel they can compile against.
+  # linuxPackages_latest (6.15+) is not yet supported by vbox-guest 7.1.x;
+  # pin to the 6.6 LTS kernel which is fully compatible.
+  boot.kernelPackages = pkgs.linuxPackages_6_6;
+
   virtualisation.virtualbox.guest = {
     enable       = true;
     dragAndDrop  = true;
