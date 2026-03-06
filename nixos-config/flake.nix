@@ -2,12 +2,13 @@
   description = "Radu's NixOS system configuration";
 
   inputs = {
-    # NixOS stable channel — everything is pinned to the same version.
-    # To upgrade later: run `nix flake update` then `sudo nixos-rebuild switch --flake /etc/nixos#nixos`
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    # NixOS stable channel — pinned to a specific commit so nix never tries
+    # to resolve a branch ref (which would cause "cannot write lock file" on
+    # remote flake builds).
+    nixpkgs.url = "github:NixOS/nixpkgs/bdb91860de2f719b57eef819b5617762f7120c70";
 
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.11";
+      url = "github:nix-community/home-manager/a9f8b3db211b4609ddd83683f9db89796c7f6ac6";
       # Reuse the same nixpkgs as the system — avoids downloading a second copy.
       inputs.nixpkgs.follows = "nixpkgs";
     };
