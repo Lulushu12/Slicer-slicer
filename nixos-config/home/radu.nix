@@ -124,7 +124,7 @@
   programs.zsh = {
     enable            = true;
     enableCompletion  = true;
-    autosuggestions.enable    = true;  # Grey suggestion as you type
+    autosuggestion.enable     = true;  # Grey suggestion as you type
     syntaxHighlighting.enable = true;  # Green = valid cmd, red = not found
 
     history = {
