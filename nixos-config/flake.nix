@@ -13,8 +13,9 @@
     };
   };
 
-  outputs = { self, nixpkgs, home-manager, ... }: {
-    nixosConfigurations.nixos = nixpkgs.lib.nixosSystem {
+  outputs = { self, nixpkgs, home-manager, ... }:
+  let
+    nixosSystem = nixpkgs.lib.nixosSystem {
       system = "x86_64-linux";
       modules = [
         # ── System configuration ────────────────────────────────────────────
@@ -33,6 +34,13 @@
           home-manager.users.radu = import ./home/radu.nix;
         }
       ];
+    };
+  in
+  {
+    nixosConfigurations = {
+      nixos = nixosSystem;
+      # Alias for CI systems that append --no-write-lock-file to the hostname
+      "nixos--no-write-lock-file" = nixosSystem;
     };
   };
 }
