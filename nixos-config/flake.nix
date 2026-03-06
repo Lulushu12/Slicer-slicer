@@ -22,7 +22,7 @@
         ./hosts/nixos/default.nix
 
         # ── Home Manager (manages user-level config alongside system) ───────
-        home-manager.nixosModules.homeManager
+        home-manager.nixosModules.home-manager
         {
           # Share system nixpkgs — no duplicate downloads
           home-manager.useGlobalPkgs = true;
