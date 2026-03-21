@@ -29,12 +29,15 @@
 
 {
   # ── Login manager (SDDM) ───────────────────────────────────────────────────
-  services.displayManager.sddm = {
-    enable = true;
-    # Run SDDM itself on Wayland (uses kwin_wayland as compositor for the
-    # login screen). This is optional but gives a fully Wayland boot.
-    wayland.enable = true;
-  };
+  services.displayManager.sddm.enable = true;
+  # SDDM runs on X11 (the default). This avoids kwin_wayland setting
+  # WAYLAND_DISPLAY before the chosen session starts, which caused Niri
+  # to connect as a client to kwin instead of launching as a compositor,
+  # making the session silently fall back to Plasma.
+
+  # Make Niri the default session. SDDM also remembers the last session
+  # per-user, but this ensures a clean first boot picks Niri.
+  services.displayManager.defaultSession = "niri";
 
   # ── KDE Plasma 6 ───────────────────────────────────────────────────────────
   services.desktopManager.plasma6.enable = true;
