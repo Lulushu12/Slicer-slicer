@@ -25,7 +25,7 @@
 # Under "Sound":
 #   Model     → ich9 or virtio  (both work with PipeWire)
 
-{ pkgs, ... }:
+{ pkgs, lib, ... }:
 
 {
   # QEMU guest agent — hypervisor ↔ VM coordination
@@ -45,10 +45,25 @@
   # the VM, which is required for Wayland compositors like Niri.
   hardware.graphics.enable = true;
 
-  # Force Mesa software rendering (llvmpipe) so Niri's EGL backend can
-  # enumerate the DRM device and get EGL_EXT_device_drm — which VirtIO GPU
-  # without VirGL 3D does not expose via hardware EGL.
-  environment.variables.LIBGL_ALWAYS_SOFTWARE = "1";
+  # VirtIO GPU without VirGL 3D does not expose EGL_EXT_device_drm, so
+  # Niri's TTY/KMS backend cannot initialise. Instead, register a custom
+  # X11 session that launches Niri via its winit backend (nested under
+  # SDDM's X11 server). DISPLAY is already set by SDDM, so Niri detects
+  # it automatically and skips the TTY backend entirely.
+  services.displayManager.sessionPackages = [
+    (pkgs.writeTextDir "share/xsessions/niri-x11.desktop" ''
+      [Desktop Entry]
+      Name=Niri
+      Comment=Niri scrollable-tiling Wayland compositor (X11 nested)
+      Exec=niri
+      Type=Application
+      DesktopNames=niri
+    '')
+  ];
+
+  # Override the default session set in desktop.nix to use the X11-nested
+  # Niri session instead of the TTY-backed wayland session.
+  services.displayManager.defaultSession = lib.mkForce "niri-x11";
 
   environment.systemPackages = [
     pkgs.spice-vdagent  # User-space SPICE agent (clipboard, resize)
