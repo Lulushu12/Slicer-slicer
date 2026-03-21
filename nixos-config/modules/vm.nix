@@ -50,19 +50,24 @@
   # X11 session that launches Niri via its winit backend (nested under
   # SDDM's X11 server). DISPLAY is already set by SDDM, so Niri detects
   # it automatically and skips the TTY backend entirely.
-  services.displayManager.sessionPackages = [
+  services.displayManager.sessionPackages = let
+    # pkgs.writeText strips common leading indentation from the Nix ''...''
+    # string, producing a properly-formatted .desktop file with no leading
+    # whitespace — required for the [Desktop Entry] header to be recognised.
+    desktopFile = pkgs.writeText "niri-x11.desktop" ''
+      [Desktop Entry]
+      Name=Niri
+      Comment=Niri scrollable-tiling Wayland compositor (X11 nested)
+      Exec=niri
+      Type=Application
+      DesktopNames=niri
+    '';
+  in [
     (pkgs.runCommand "niri-x11-session" {
       passthru.providedSessions = [ "niri-x11" ];
     } ''
       mkdir -p $out/share/xsessions
-      cat > $out/share/xsessions/niri-x11.desktop <<'EOF'
-      [Desktop Entry]
-      Name=Niri
-      Comment=Niri scrollable-tiling Wayland compositor (X11 nested)
-      Exec=dbus-run-session -- niri
-      Type=Application
-      DesktopNames=niri
-      EOF
+      cp ${desktopFile} $out/share/xsessions/niri-x11.desktop
     '')
   ];
 
