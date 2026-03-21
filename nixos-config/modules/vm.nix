@@ -56,9 +56,9 @@
     # whitespace — required for the [Desktop Entry] header to be recognised.
     desktopFile = pkgs.writeText "niri-x11.desktop" ''
       [Desktop Entry]
-      Name=Niri (X11)
-      Comment=Niri scrollable-tiling Wayland compositor (X11 nested)
-      Exec=niri
+      Name=Niri
+      Comment=Niri scrollable-tiling Wayland compositor (nested under KWin)
+      Exec=kwin_wayland --no-global-shortcuts --no-kactivities --no-lockscreen -- niri
       Type=Application
       DesktopNames=niri
     '';
