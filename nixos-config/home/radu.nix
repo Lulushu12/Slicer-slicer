@@ -347,7 +347,9 @@
 
     input {
         keyboard {
-            xkb { layout "us" }
+            xkb {
+                layout "us"
+            }
             repeat-delay 300
             repeat-rate  50
         }
@@ -379,10 +381,14 @@
             active-color   "#7aa2f7"
             inactive-color "#414868"
         }
-        border { off }
+        border {
+            off
+        }
     }
 
-    animations { slowdown 1.0 }
+    animations {
+        slowdown 1.0
+    }
 
     spawn-at-startup "waybar"
     spawn-at-startup "mako"
@@ -406,6 +412,7 @@
         match app-id="pavucontrol"
         open-floating true
     }
+
 
     binds {
         Mod+Return  { spawn "kitty"; }
