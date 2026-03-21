@@ -470,7 +470,7 @@
         XF86MonBrightnessDown { spawn "brightnessctl" "s" "10%-"; }
 
         Mod+V       { spawn "sh" "-c" "cliphist list | fuzzel --dmenu | cliphist decode | wl-copy"; }
-        Mod+Shift+L { spawn "swaylock" "--color" "1a1b26"; }
+        Mod+Escape  { spawn "swaylock" "--color" "1a1b26"; }
 
         Mod+Shift+E { quit; }
         Mod+Shift+P { power-off-monitors; }
