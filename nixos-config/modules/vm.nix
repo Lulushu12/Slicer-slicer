@@ -34,6 +34,17 @@
   # SPICE agent — clipboard sharing and dynamic screen resolution
   services.spice-vdagentd.enable = true;
 
+  # VirtIO GPU kernel module.
+  # Without this, Niri (and any DRM/KMS compositor) gets driver=(null) on
+  # /dev/dri/card0, EGL_EXT_device_drm is unsupported, and the display
+  # backend fails to initialise — resulting in a black screen with no output.
+  boot.kernelModules = [ "virtio_gpu" ];
+
+  # Mesa OpenGL drivers for the VirtIO GPU.
+  # Enables DRI and the Gallium VirtIO driver so EGL/Vulkan work inside
+  # the VM, which is required for Wayland compositors like Niri.
+  hardware.graphics.enable = true;
+
   environment.systemPackages = [
     pkgs.spice-vdagent  # User-space SPICE agent (clipboard, resize)
   ];
