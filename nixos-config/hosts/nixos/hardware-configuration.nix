@@ -1,11 +1,21 @@
-# Auto-generated hardware configuration for the "nixos" VirtualBox VM.
+# Hardware configuration for a KVM/QEMU virtual machine with VirtIO devices.
 #
-# Originally produced by `nixos-generate-config` and committed here so the
-# flake can be evaluated from GitHub without requiring a local copy.
+# ── IMPORTANT ────────────────────────────────────────────────────────────────
+# This file is a best-effort template for a standard virt-manager/KVM setup.
+# If your disk layout differs (different partition count, EFI, LVM, etc.),
+# regenerate this file on the installed system with:
 #
-# If you reinstall NixOS or migrate to new hardware, regenerate this file with:
 #   sudo nixos-generate-config --show-hardware-config
+#
 # then replace the contents below with the fresh output.
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# Expected virt-manager setup:
+#   Disk bus   → VirtIO  (/dev/vda)
+#   Video      → VirtIO  (best performance, supports 3D acceleration)
+#   Display    → SPICE   (for clipboard sharing and auto-resize)
+#   Sound      → ich9 or virtio
+#   Partition layout: /dev/vda1 = / (ext4), /dev/vda2 = swap
 
 { config, lib, pkgs, modulesPath, ... }:
 
@@ -15,33 +25,41 @@
   ];
 
   # ── Kernel modules ───────────────────────────────────────────────────────────
+  # VirtIO modules for KVM/QEMU paravirtualised devices.
   boot.initrd.availableKernelModules = [
-    "ata_piix"      # VirtualBox SATA/IDE controller
-    "ohci_pci"      # USB 1.x
-    "ehci_pci"      # USB 2.0
-    "ahci"          # AHCI SATA
-    "sd_mod"        # SCSI disk
-    "sr_mod"        # SCSI CD-ROM
+    "virtio_pci"      # VirtIO PCI bus (required for all VirtIO devices)
+    "virtio_blk"      # VirtIO block device (/dev/vda)
+    "virtio_scsi"     # VirtIO SCSI (alternative block driver — loaded just in case)
+    "virtio_net"      # VirtIO network card
+    "virtio_balloon"  # Memory balloon (dynamic RAM adjustment from host)
+    "xhci_pci"        # USB 3.0 controller (QEMU emulates this)
+    "ahci"            # AHCI SATA (for any emulated SATA devices)
+    "sd_mod"          # SCSI/SATA disk module
+    "sr_mod"          # SCSI CD-ROM (ISO boot media)
   ];
-  boot.initrd.kernelModules = [];
+  boot.initrd.kernelModules = [ "virtio_pci" "virtio_blk" ];
   boot.kernelModules = [];
   boot.extraModulePackages = [];
 
   # ── Filesystems ──────────────────────────────────────────────────────────────
-  # Adjust UUIDs / labels to match your actual disk layout.
-  # Run `blkid` on the VM to get the real values.
+  # Standard two-partition layout: root on vda1, swap on vda2.
+  #
+  # If the NixOS installer used UUID labels instead of device paths, run:
+  #   blkid /dev/vda1 /dev/vda2
+  # and substitute the UUIDs here:
+  #   device = "/dev/disk/by-uuid/xxxx-xxxx";
   fileSystems."/" = {
-    device = "/dev/sda1";
+    device = "/dev/vda1";
     fsType = "ext4";
   };
 
   swapDevices = [
-    { device = "/dev/sda2"; }
+    { device = "/dev/vda2"; }
   ];
 
   # ── CPU ──────────────────────────────────────────────────────────────────────
-  # VirtualBox exposes the host CPU; this enables microcode updates for both
-  # common vendor families so the config works on AMD and Intel hosts alike.
+  # KVM passes through the host CPU family; enable microcode updates for both
+  # AMD and Intel so the config works regardless of the host processor.
   hardware.cpu.intel.updateMicrocode =
     lib.mkDefault config.hardware.enableRedistributableFirmware;
   hardware.cpu.amd.updateMicrocode =

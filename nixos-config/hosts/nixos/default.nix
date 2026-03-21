@@ -21,8 +21,8 @@
     ../../modules/desktop.nix       # Niri + KDE, display manager, Wayland tools
     ../../modules/development.nix   # Compilers, debuggers, build tools
     ../../modules/gaming.nix        # Steam, Lutris, GameMode, RetroArch
-    # ../../modules/vm.nix           # QEMU/KVM guest tools (SPICE + qemu-agent)
-    ../../modules/virtualbox.nix    # VirtualBox guest additions
+    ../../modules/vm.nix            # QEMU/KVM guest tools (SPICE + qemu-agent)
+    # ../../modules/virtualbox.nix  # VirtualBox guest additions (swap in if using VirtualBox)
   ];
 
   # ── Unfree packages ──────────────────────────────────────────────────────────
@@ -35,7 +35,7 @@
   # used. GRUB in legacy mode installs to the MBR of /dev/sda instead.
   boot.loader.grub = {
     enable = true;
-    device = "/dev/sda";   # Install GRUB to the MBR of the disk (not a partition)
+    device = "/dev/vda";   # VirtIO disk in KVM/QEMU — change to /dev/sda for VirtualBox or bare metal
   };
 
   # ── Network ──────────────────────────────────────────────────────────────────
