@@ -315,17 +315,13 @@
   };
 
   # ════════════════════════════════════════════════════════════════════════════
-  # THEMING: GTK (dark mode — Breeze Dark + Papirus icons)
+  # THEMING: GTK
   # ════════════════════════════════════════════════════════════════════════════
-
-  gtk = {
-    enable = true;
-    theme       = { name = "Breeze-Dark";     package = pkgs.kdePackages.breeze; };
-    iconTheme   = { name = "Papirus-Dark";    package = pkgs.papirus-icon-theme; };
-    cursorTheme = { name = "breeze_cursors";  package = pkgs.kdePackages.breeze; size = 24; };
-    gtk3.extraConfig.gtk-application-prefer-dark-theme = true;
-    gtk4.extraConfig.gtk-application-prefer-dark-theme = true;
-  };
+  # GTK theming is intentionally left to KDE Plasma. KDE writes to
+  # ~/.gtkrc-2.0 and ~/.config/gtk-{3,4}.0/ on every login, which conflicts
+  # with Home Manager symlinks and causes HM activation to fail repeatedly.
+  # KDE applies Breeze-Dark to GTK apps automatically via its GTK settings
+  # module, so no HM management is needed.
 
   # ════════════════════════════════════════════════════════════════════════════
   # THEMING: QT (mirrors GTK dark mode)
