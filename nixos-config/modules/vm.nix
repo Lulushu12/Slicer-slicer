@@ -58,7 +58,7 @@
       Exec=niri
       Type=Application
       DesktopNames=niri
-    '')
+    '' // { passthru = { providedSessions = [ "niri-x11" ]; }; })
   ];
 
   # Override the default session set in desktop.nix to use the X11-nested
