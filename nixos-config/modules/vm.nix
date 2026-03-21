@@ -59,7 +59,7 @@
       [Desktop Entry]
       Name=Niri
       Comment=Niri scrollable-tiling Wayland compositor (X11 nested)
-      Exec=niri
+      Exec=dbus-run-session -- niri
       Type=Application
       DesktopNames=niri
       EOF
