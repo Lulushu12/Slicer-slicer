@@ -45,6 +45,11 @@
   # the VM, which is required for Wayland compositors like Niri.
   hardware.graphics.enable = true;
 
+  # Force Mesa software rendering (llvmpipe) so Niri's EGL backend can
+  # enumerate the DRM device and get EGL_EXT_device_drm — which VirtIO GPU
+  # without VirGL 3D does not expose via hardware EGL.
+  environment.variables.LIBGL_ALWAYS_SOFTWARE = "1";
+
   environment.systemPackages = [
     pkgs.spice-vdagent  # User-space SPICE agent (clipboard, resize)
   ];
