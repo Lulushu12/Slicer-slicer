@@ -15,7 +15,7 @@
 #   Video      → VirtIO  (best performance, supports 3D acceleration)
 #   Display    → SPICE   (for clipboard sharing and auto-resize)
 #   Sound      → ich9 or virtio
-#   Partition layout: /dev/vda1 = / (ext4), /dev/vda2 = swap
+#   Partition layout: /dev/vda1 = BIOS boot (8M), /dev/vda2 = swap (4G), /dev/vda3 = / (ext4)
 
 { config, lib, pkgs, modulesPath, ... }:
 
@@ -42,14 +42,17 @@
   boot.extraModulePackages = [];
 
   # ── Filesystems ──────────────────────────────────────────────────────────────
-  # Standard two-partition layout: root on vda1, swap on vda2.
+  # Three-partition GPT layout:
+  #   vda1 — 8 MiB BIOS boot partition (GRUB core.img lives here, not mounted)
+  #   vda2 — 4 GiB swap
+  #   vda3 — remainder, ext4 root (/)
   #
   # If the NixOS installer used UUID labels instead of device paths, run:
-  #   blkid /dev/vda1 /dev/vda2
+  #   blkid /dev/vda2 /dev/vda3
   # and substitute the UUIDs here:
   #   device = "/dev/disk/by-uuid/xxxx-xxxx";
   fileSystems."/" = {
-    device = "/dev/vda1";
+    device = "/dev/vda3";
     fsType = "ext4";
   };
 
