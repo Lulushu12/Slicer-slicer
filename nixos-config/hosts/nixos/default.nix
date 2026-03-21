@@ -31,11 +31,15 @@
   nixpkgs.config.allowUnfree = true;
 
   # ── Bootloader ───────────────────────────────────────────────────────────────
-  # This VM uses a BIOS/MBR disk (no EFI partition), so systemd-boot cannot be
-  # used. GRUB in legacy mode installs to the MBR of /dev/sda instead.
+  # This VM uses a BIOS/GPT disk (no EFI partition), so systemd-boot cannot be
+  # used. GRUB in legacy mode writes core.img to the 8 MiB BIOS boot partition
+  # on /dev/vda (vda1) and updates the GPT protective MBR.
+  #
+  # lib.mkForce ensures this device path wins even if nixos-generate-config
+  # writes a different path (e.g. /dev/sda) into hardware-configuration.nix.
   boot.loader.grub = {
     enable = true;
-    device = "/dev/vda";   # VirtIO disk in KVM/QEMU — change to /dev/sda for VirtualBox or bare metal
+    device = lib.mkForce "/dev/vda";
   };
 
   # ── Network ──────────────────────────────────────────────────────────────────
