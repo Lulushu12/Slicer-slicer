@@ -51,14 +51,19 @@
   # SDDM's X11 server). DISPLAY is already set by SDDM, so Niri detects
   # it automatically and skips the TTY backend entirely.
   services.displayManager.sessionPackages = [
-    (pkgs.writeTextDir "share/xsessions/niri-x11.desktop" ''
+    (pkgs.runCommand "niri-x11-session" {
+      passthru.providedSessions = [ "niri-x11" ];
+    } ''
+      mkdir -p $out/share/xsessions
+      cat > $out/share/xsessions/niri-x11.desktop <<'EOF'
       [Desktop Entry]
       Name=Niri
       Comment=Niri scrollable-tiling Wayland compositor (X11 nested)
       Exec=niri
       Type=Application
       DesktopNames=niri
-    '' // { passthru = { providedSessions = [ "niri-x11" ]; }; })
+      EOF
+    '')
   ];
 
   # Override the default session set in desktop.nix to use the X11-nested
