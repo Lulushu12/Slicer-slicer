@@ -1,17 +1,20 @@
 # Modular NixOS Flake - CachyOS to NixOS Migration
 
-A complete, modular NixOS flake configuration designed to replicate your CachyOS system with both **KDE Plasma** and **GNOME** desktop environments installed side-by-side. Switch between them at the SDDM login screen without rebuilding.
+A complete, modular NixOS flake configuration designed to act as a **unified monorepo** for both your high-end Desktop (CachyOS migration) and your Lenovo Laptop. It manages both **KDE Plasma** and **GNOME** target systems side-by-side using a DRY modular architecture.
 
 ## Structure
 
 ```
 .
 ├── flake.nix                           # Main entry point
-├── hosts/
-│   └── cachyos-to-nix/
-│       ├── default.nix                 # Host configuration and imports
-│       ├── hardware.nix                # Hardware configuration
-│       └── networking.nix              # Network settings
+├── hosts/                                # Machine-specific profiles
+│   ├── cachyos-to-nix/                 # High-end Desktop (NVIDIA)
+│   │   ├── default.nix                 
+│   │   └── hardware.nix                
+│   └── laptop-personal/                # Lenovo IdeaPad (AMD Hybrid + TLP battery profile)
+│       ├── default.nix
+│       ├── hardware.nix
+│       └── networking.nix
 ├── modules/                            # Reusable NixOS modules
 │   ├── desktop/
 │   │   ├── kde.nix                     # KDE Plasma 6 configuration
@@ -102,8 +105,13 @@ sudo git clone <your-repo-url> .
    - Adjust boot loader if needed
 
 3. **Build and activate the configuration:**
+   - For your Desktop:
 ```bash
 sudo nixos-rebuild switch --flake .#cachyos-to-nix
+```
+   - For your Laptop:
+```bash
+sudo nixos-rebuild switch --flake .#laptop-personal
 ```
 
 4. **Reboot and enjoy!**
